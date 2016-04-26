@@ -1,0 +1,8 @@
+.DS_Store
+.ropeproject/
+*.pyc
+*.rdb
+.coverage*
+.cache/
+.python-version
+.ipynb_checkpoints/

@@ -1,0 +1,1 @@
+py.test --cov=scheduler/scheduler.py --cov-report term-missing tests/
