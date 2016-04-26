@@ -184,7 +184,6 @@ class ProbabilisticTaskScheduler:
         if not slots:
             return []
         prior = self._likelihood_estimator.likelihood(task, self._likelihood_estimator.priors)
-        # prior = self._category_priors[task.category]
 
         slot_densities = [(prior.density_for(s.start_minute, s.end_minute), s) for s in slots]
         norm = sum([d[0] for d in slot_densities])
@@ -211,3 +210,7 @@ class ProbabilisticTaskScheduler:
             slots.append(slot)
         self._task_scheduler._tasks = original_tasks
         return slots
+
+    @property
+    def tasks(self):
+        return self._task_scheduler.tasks
