@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from itertools import chain, repeat
 import numpy as np
 
 class Time:
@@ -122,18 +123,19 @@ class DiscreteDistribution:
         for start in interval_starts:
             if start not in frequencies:
                 frequencies[start] = 0.0001
-        self._frequencies = frequencies
+
+        self._frequencies = [v for k, v in sorted(frequencies.items())]
         self.normalize()
 
     def density_at(self, start_minute):
-        return self._frequencies[start_minute]
+        return self._frequencies[int(start_minute / self._interval_length)]
 
     def density_for(self, start_minute, end_minute):
         return sum([self.density_at(start) for start in range(start_minute, end_minute + 1, self._interval_length)])
 
     def normalize(self):
-        norm = sum([d for d in self._frequencies.values()])
-        self._frequencies = {k:v/norm for k, v in self._frequencies.items()}
+        norm = sum(self._frequencies)
+        self._frequencies = list(map(lambda x: x / norm, self._frequencies))
 
     def joint(self, dist):
         frequencies = dict()
@@ -141,6 +143,9 @@ class DiscreteDistribution:
         for start in interval_starts:
             frequencies[start] = self.density_at(start) * dist.density_at(start)
         return DiscreteDistribution(frequencies, self._interval_length)
+
+    def expand_intervals(self, n):
+        return list(chain.from_iterable(repeat(x, n) for x in self._frequencies))
 
     @property
     def interval_length(self):
@@ -160,6 +165,15 @@ class UniformDistribution(DiscreteDistribution):
 
         frequencies = {start: density_per_interval for start in range(start_m, end_m + 1, interval_length)}
         DiscreteDistribution.__init__(self, frequencies, interval_length)
+
+class BetaDistribution:
+
+    def __init__(self, success_count, failure_count):
+        self._success_count = success_count
+        self._failure_count = failure_count
+
+    def sample(self, count=1):
+        return np.random.beta(self._success_count, self._failure_count, count)
 
 
 from abc import ABCMeta, abstractmethod
